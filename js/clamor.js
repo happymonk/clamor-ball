@@ -127,7 +127,6 @@ var ball = {
             if (ball.x2 >= paddle.x && ball.x <= paddle.x + 
                 paddle.width && ball.y2 < paddle.y + 8) {
                 ball.dy *= -1;
-                paddle.color = ball.color;
             };
         };
     },
@@ -151,6 +150,7 @@ var ball = {
         if (i < len) {
             i += 1;
             ball.color = ball.colors[i];
+			paddle.color = ball.color;
         }
         else {
             //when the last color is being used, chose the first
