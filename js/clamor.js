@@ -4,7 +4,9 @@
  */
 
 //global variables
-var canvas = document.getElementById('canvas');
+// $RP: Rather than have this global, we should pass it into our main game module
+// 		so the gaming mechanisms don't know directly what they're drawing to.
+var canvas = document.getElementById('game');
 var c = canvas.getContext('2d');
 var output = document.getElementById('output');
 var bcr = canvas.getBoundingClientRect();
@@ -31,12 +33,15 @@ var frame = {
     }
 };
 
+// $RP: Instead of a "lives" class, I think the game should just fire an event when a life would be lost
+//		Then, the main game driver can decide what should happen as a consequence.
 var lives = {
     remaining: 2,
     reset: function () {
         this.remaining = 2;
     },
     update: function () {
+		// $RP: We should avoid having game components draw directly to the screen.
         c.fillStyle = 'rgba(0,255,0,0.75)';
         c.fillText('lives: ' + lives.remaining,canvas.width - 
                    40, 10);
@@ -51,6 +56,11 @@ var score = {
     },
     speedup: 5,
     update: function () {
+		// $RP: We should avoid having game components draw directly to the screen.
+		//		Depending on what the rules are for scoring, we may want to again use events
+		//		to trigger to the game driver that the score should be updated. So, we don't
+		//		track here what the total score is, just raise an event that indicates how much
+		//		the score has changed by.
         c.save();
         c.fillStyle = 'rgba(0,255,0,0.75)';
         c.fillText('score: ' + this.points,2,10);
@@ -69,6 +79,8 @@ var t = {
       t.elapsed = (t.now - t.then)/1000;
     },
     display: function () {
+		// $RP: Rather than write directly to the display, let an interested party just
+		//		read the "elapsed" property and display it as they like.
         out4.innerHTML = 'Elapsed: ' + this.elapsed;
     },
     reset: function () {
@@ -90,6 +102,7 @@ var coords = {
 };
 
 var ball = {
+	// $RP: Ball should just have a 'size' property (in pixels) which would be used to draw and calculate boundaries
     x: 16,
     x2: 26,
     y: 16,
@@ -112,12 +125,14 @@ var ball = {
         if (this.y <= 0){
             this.y = 0;
             this.dy *= -1;
+			// $RP: Raise an event that a point was scored (let the game driver decide to speed up/change color, etc).
             score.points++;
             if (score.points % 5 == 0) {
                 ball.setColor();
             };
         };
         if (this.y >= canvas.height - this.width){
+			//$RP: Raise an event that the point was lost. Let the game driver decide what happens)
             ball.reset();
             lives.remaining--;
         };
@@ -226,16 +241,6 @@ var paddle = {
     }
 };
 
-//game loop here
-initCanvas();
-requestID = requestAnimationFrame(render);
-
-
-
-//end of game loop
-
-//game methods here
-
 function render() {
     if (lives.remaining >= 0){
       clearCanvas();
@@ -258,6 +263,11 @@ function render() {
         gameOver();
     }
 };
+
+
+//game loop here
+initCanvas();
+requestID = requestAnimationFrame(render);
 
 function gameOver() {
     gameState.isRunning = false;
