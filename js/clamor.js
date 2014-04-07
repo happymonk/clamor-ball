@@ -3,16 +3,6 @@
  * JavaScript
  */
 
-//global variables
-// $RP: Rather than have this global, we should pass it into our main game module
-// 		so the gaming mechanisms don't know directly what they're drawing to.
-var canvas = document.getElementById('game');
-var c = canvas.getContext('2d');
-var output = document.getElementById('output');
-var bcr = canvas.getBoundingClientRect();
-var requestID = 0;
-var intervalID = 0;
-
 var gameState = {
     isRunning: true,
     isPaused: false,
@@ -25,290 +15,245 @@ var gameState = {
 
     }
 };
-
-var frame = {
-    count: 0,
-    reset: function () {
-        this.count = 0;
-    }
-};
-
-// $RP: Instead of a "lives" class, I think the game should just fire an event when a life would be lost
-//		Then, the main game driver can decide what should happen as a consequence.
-var lives = {
-    remaining: 2,
-    reset: function () {
-        this.remaining = 2;
-    },
-    update: function () {
-		// $RP: We should avoid having game components draw directly to the screen.
-        c.fillStyle = 'rgba(0,255,0,0.75)';
-        c.fillText('lives: ' + lives.remaining,canvas.width - 
-                   40, 10);
-    }
-};
-
-var score = {
-    points: 0,
-    reset: function () {
-        this.points = 0;
-        this.speedup = 5;
-    },
-    speedup: 5,
-    update: function () {
-		// $RP: We should avoid having game components draw directly to the screen.
-		//		Depending on what the rules are for scoring, we may want to again use events
-		//		to trigger to the game driver that the score should be updated. So, we don't
-		//		track here what the total score is, just raise an event that indicates how much
-		//		the score has changed by.
-        c.save();
-        c.fillStyle = 'rgba(0,255,0,0.75)';
-        c.fillText('score: ' + this.points,2,10);
-        c.restore();
-    }
-};
-
-var t = {
-    now: 0,
-    then: 0,
-    elapsed: 0,
-    getElapsed: function () {
-      if (t.now == 0){t.now = Date.now();};
-      t.then = t.now;
-      t.now = Date.now();
-      t.elapsed = (t.now - t.then)/1000;
-    },
-    display: function () {
-		// $RP: Rather than write directly to the display, let an interested party just
-		//		read the "elapsed" property and display it as they like.
-        out4.innerHTML = 'Elapsed: ' + this.elapsed;
-    },
-    reset: function () {
-        t.now = 0;
-        t.then = 0;
-        t.elapsed = 0;
-    }
-};
-                           
-var coords = {
-    listener: 'mousemove',    
-    f: function (e) {
-        this.x = e.clientX - bcr.left; 
-        this.y = e.clientY - bcr.top; 
-        output.innerHTML = 'mouse: ' + this.x + ', ' + this.y;
-    },
-    x: 0,
-    y: 0
-};
-
-var ball = {
-	// $RP: Ball should just have a 'size' property (in pixels) which would be used to draw and calculate boundaries
-    x: 16,
-    x2: 26,
-    y: 16,
-    y2: 26,
-    dx: 25,  //pixels per second
-    dy: 100,  //pixels per second
-    checkCollisions: function () {
-        this.checkPaddle();
-        this.checkWalls();
-    },
-    checkWalls: function () {
-        if (this.x <= 0){
-            this.x = 0;
-            this.dx *= -1;
-        };
-        if (this.x >= canvas.width - this.width){
-            this.x = canvas.width - this.width;
-            this.dx *= -1;
-        };
-        if (this.y <= 0){
-            this.y = 0;
-            this.dy *= -1;
-			// $RP: Raise an event that a point was scored (let the game driver decide to speed up/change color, etc).
-            score.points++;
-            if (score.points % 5 == 0) {
-                ball.setColor();
-            };
-        };
-        if (this.y >= canvas.height - this.width){
-			//$RP: Raise an event that the point was lost. Let the game driver decide what happens)
-            ball.reset();
-            lives.remaining--;
-        };
-    },
-    checkPaddle: function () {  //check if ball collides with paddle
-        if (ball.dy > 0 && ball.y2 >= paddle.y){
-            if (ball.x2 >= paddle.x && ball.x <= paddle.x + 
-                paddle.width && ball.y2 < paddle.y + 8) {
-                ball.dy *= -1;
-            };
-        };
-    },
-    displayCoords: function () {
-      out2.innerHTML = 'ball: [' + Math.round(this.x) + ', ' + 
-          Math.round(this.y) + '], [' + Math.round(this.x2) + 
-          ', ' + Math.round(this.y2) + ']';
-    },
-    move: function () {
-        this.x += this.dx * t.elapsed; 
-        this.y += this.dy * t.elapsed;
+  
+var Ball = function(size) {
+    this.x = 16;
+    this.x2 = this.x + size;
+    this.y = 16;
+    this.y2 = this.y + size;
+    this.dx = 25;  //pixels per second
+    this.dy = 100;  //pixels per second
+	this.ChangeXDirection = function() {
+		this.dx *= -1;
+	};
+	this.ChangeYDirection = function() {
+		this.dy *= -1;
+	};
+    this.Move = function (elapsed) {
+        this.x += this.dx * elapsed; 
+        this.y += this.dy * elapsed;
         this.x2 = this.x + this.width;
         this.y2 = this.y + this.height;
-    },
-    colors: ['white', 'red', 'orange', 'yellow', 'green', 'blue', 
-             'indigo', 'violet', 'silver', 'gray'],
-    setColor: function () {
-        var color = ball.color;
-        var len = ball.colors.length - 1;
-        var i = ball.colors.indexOf(color);
-        if (i < len) {
-            i += 1;
-            ball.color = ball.colors[i];
-			paddle.color = ball.color;
-        }
-        else {
-            //when the last color is being used, chose the first
-            ball.color = 'white';
-        }
-    },
-    color: 'white', 
-    draw: function () {
-        c.fillStyle = this.color;         
-        //c.fillRect(this.x,this.y,this.width,this.height);
-        c.beginPath();
-        c.arc(this.x+5,this.y+5,5,0,Math.PI*2,false);
-        c.fill();
-    },    
-    width: 10,
-    height: 10,
-    reset: function () {
-        this.x = 16; 
-        this.y = 16;
-        this.dx = 25;
-        this.dy = 100;
-        this.color = 'white';
-    },
-    speedLimit: 700,
-    speedUp: function () {
-        //speed up the ball
-        if (score.points == score.speedup) {
-            if (ball.dy > 0 && ball.dy < ball.speedLimit){
-                ball.dy *= 1.25;
-                score.speedup += 5;
+    };
+	this.SpeedUp = function(v) {
+		this.dy *= (1 + v);
+	};
+	this.SlowDown = function(v) {
+		this.dy *= (1 - v);
+	};
+    this.width = size;
+    this.height = size;
+};
+
+var Paddle = function(size) {
+    this.x = 120;
+    this.y = 288;
+    this.x2 = null;
+    this.y2 = null;
+    this.width = size;
+    this.height = 10;
+	this.Move = function(x) {
+		this.x = x;
+	};
+};
+
+var GameDriver = function (lives, canvas) {
+	this.Start = function() {
+		//game loop here
+		display.ClearCanvas();
+		requestID = requestAnimationFrame(this.Action);	
+	};
+	this.Action = function() {
+		if (GameProperties.Lives >= 0)
+		{
+			display.ClearBoard();
+			this.UpdateElapsedTime();
+			gameProps.Ball.Move(gameProps.ElapsedTime);
+			gameProps.Paddle.Move(coords.x);
+			this.CheckCollisions();
+			display.RenderAction();
+			this.CheckSpeedUp();
+			requestID = requestAnimationFrame(this.Action);
+		}
+		else
+		{
+			display.ShowGameOver();
+		}
+		
+	};
+	this.MovePaddle = function(e) {
+        var x = (e.clientX - bcr.left - (gameProps.Paddle.width/2));
+        if (x < 0) {
+            gameProps.Paddle.Move(0);
+        };
+        if (x > 0 && x < canvas.width - gameProps.Paddle.width) {
+            gameProps.Paddle.Move(x);
+        };
+	};
+    this.CheckCollisions = function () {
+        this.CheckPaddle();
+        this.CheckWalls();
+    };
+    this.CheckWalls = function () {
+        if (gameProps.Ball.x <= 0){
+            gameProps.Ball.x = 0;
+            gameProps.Ball.ChangeDirection();
+        };
+        if (gameProps.Ball.x >= canvas.width - gameProps.Ball.width){
+            gameProps.Ball.x = canvas.width - gameProps.Ball.width;
+            gameProps.Ball.ChangeXDirection();
+        };
+        if (gameProps.Ball.y <= 0){
+            gameProps.Ball.y = 0;
+            gameProps.Ball.ChangeYDirection();
+            gameProps.Score++;
+			this.CheckSpeedUp();
+        };
+        if (gameProps.Ball.y >= canvas.height - gameProps.Ball.width){
+            gameProps.Ball = new Ball(gameProps.Ball.width);
+            gameProps.Lives--;
+        };
+    };
+    this.CheckPaddle = function () {  //check if ball collides with paddle
+        if (gameProps.Ball.dy > 0 && gameProps.Ball.y2 >= gameProps.Paddle.y){
+            if (gameProps.Ball.x2 >= gameProps.Paddle.x && gameProps.Ball.x <= gameProps.Paddle.x + 
+                gameProps.Paddle.width && gameProps.Ball.y2 < gameProps.Paddle.y + 8) {
+                gameProps.Ball.ChangeYDirection();
             };
         };
-    },
-    update: function () {
-        this.checkCollisions();
-        this.move();
-        this.displayCoords();
-        this.draw();
-    }
+    };
+    this.UpdateElapsedTime = function () {
+      t0 = t1;
+      t1 = Date.now();
+      gameProps.ElapsedTime = (t1 - t0)/1000;
+    };
+    this.ChangeColor = function () {
+		gameProps.ColorIndex++;
+		if (gameProps.ColorIndex > gameProps.Colors.length)
+			gameProps.ColorIndex = 0;
+    };
+    this.speedLimit = 700,
+    this.CheckSpeedUp = function () {
+        //speed up the ball
+        if (gameProps.Score == gameProps.NextSpeedUp) {
+            if (gameProps.Ball.dy > 0 && gameProps.Ball.dy < this.speedLimit){
+				gameProps.Ball.SpeedUp(.25);
+                gameProps.NextSpeedUp += 5;
+                this.ChangeColor();
+            };
+        };
+    };
+	this.ResetGameProps = function() {
+		var gp = new GameProperties();
+		gp.Ball = new Ball(10);
+		gp.Paddle = new Paddle(50);
+		gp.Score = 0;
+		gp.NumLives = lives;
+		gp.NextSpeedUp = 5;
+		gp.Colors = ['white', 'red', 'orange', 'yellow', 'green', 'blue', 
+				 'indigo', 'violet', 'silver', 'gray'];
+		gp.ColorIndex = 0;
+		return gp;
+	};
+	this.ResetGame = function(e) {
+		gameProps = this.GameDriver.ResetGameProps();
+		display.ClearCanvas();
+	}
+	;
+	var bcr = canvas.getBoundingClientRect();	
+	var gameProps = this.ResetGameProps();
+	var display = new GameDisplay(canvas, gameProps);
+	var t0 = Date.now();
+	var t1 = Date.now();
+	var coords = {
+		x: 0,
+		y: 0
+	};
+	
+	canvas.GameDriver = this;
+    canvas.addEventListener('mousemove', function(e) {
+		coords.x = e.clientX - bcr.left;
+		coords.y = e.clientY - bcr.top;
+	}, false);
+    canvas.addEventListener('mousemove', this.MovePaddle,false);
+    canvas.addEventListener('click',this.ResetGame,false);
+    document.addEventListener('keydown', gameState.pauseGame, false);
+}
+
+var GameProperties = function() {
+	this.Ball = null;
+	this.Paddle = null;
+	this.Score = null;
+	this.NumLives = null;
+	this.Speed = null;
+	this.Frame = 0;
+	this.ElapsedTime = 0;
+	this.Colors = [];
+	this.ColorIndex = 0;
 };
 
-var paddle = {
-    x: 120,
-    y: 288,
-    x2: null,
-    y2: null,
-    width: 50,
-    height: 10,
-    color: 'white',
-    move: function (e) {
-        var x = (e.clientX - bcr.left - 25);
-        if (x < 0) {
-            paddle.x = 0;
-        };
-        if (x > 0 && x < canvas.width - 50) {
-            paddle.x = x;
-        };
-    },
-    draw: function () {
-        c.save();
-        c.fillStyle = this.color;
-        c.fillRect(this.x,this.y,this.width,this.height);
-        c.restore();
-    },
-    displayCoords: function () {
-      out5.innerHTML = 'paddle: [' + Math.round(this.x) + ', ' + 
-          Math.round(this.y) + '], [' + Math.round(this.x2) + 
-          ', ' + Math.round(this.y2) + ']';
-    },
-    update: function () {
-        this.draw();
-        this.displayCoords();
-    }
-};
-
-function render() {
-    if (lives.remaining >= 0){
-      clearCanvas();
-      paddle.update();
-      score.update();
-      lives.update();
-      ball.update();
-      ball.speedUp();
+var GameDisplay = function (theCanvas, gameProps) {
+	this.canvas = theCanvas,
+	this.GameProperties = gameProps,
+	this.RenderAction = function() {
+      this.ClearCanvas();
+	  this.DrawPaddle();
+	  this.DrawScore();
+	  this.DrawLives();
+	  this.DrawBall();
       c.save();
       c.fillStyle = 'gray';
       c.fillText('speed' + Math.round(ball.dy),2,20);
       c.restore();
-      out3.innerHTML = 'frame: ' + frame.count;
-      requestID = requestAnimationFrame(render);
-      t.getElapsed();
-      t.display();
-      frame.count++;
-    }
-    else {
-        gameOver();
-    }
-};
-
-
-//game loop here
-initCanvas();
-requestID = requestAnimationFrame(render);
-
-function gameOver() {
-    gameState.isRunning = false;
-    clearCanvas();
-    c.fillStyle = 'red';
-    c.fillText('GAME OVER',canvas.width/2 - 
-               32,canvas.height/2);
-    c.fillText('-click to start-',canvas.width/2 - 
-               30, canvas.height/2 + 20);
-};
-
-function addELs() {
-    canvas.addEventListener(coords.listener, coords.f, false);
-    canvas.addEventListener('mousemove', paddle.move,false);
-    canvas.addEventListener('click',gameReset,false);
-    document.addEventListener('keydown', gameState.pauseGame, false);
-};
-
-function initCanvas() {
-    canvas.width = 336;
-    canvas.height = 320;
-    clearCanvas();
-    addELs();
-};
-
-function gameReset() {
-    if (!gameState.isRunning){
-        t.getElapsed();
-        addELs();
-        frame.reset();
-        score.reset();
-        lives.reset();
-        ball.reset();
-        t.getElapsed();
-        render();
-        gameState.isRunning = true;
-        gameState.isPaused = false;
+      out3.innerHTML = 'frame: ' + this.GameProperties.frame.count;
+      //t.getElapsed();
+      //t.display();
+	  this.GameProperties.Frame++;
+	};	
+	this.ShowGameOver = function() {
+		this.ClearCanvas();
+		c.fillStyle = 'red';
+		c.fillText('GAME OVER',canvas.width/2 - 
+				   32,canvas.height/2);
+		c.fillText('-click to start-',canvas.width/2 - 
+				   30, canvas.height/2 + 20);	
+	};	
+	this.ClearCanvas = function() {
+		c.fillStyle = 'black';
+		c.fillRect(0,0,canvas.width,canvas.height);	
+	};
+    this.DrawPaddle = function () {
+        c.save();
+        c.fillStyle = this.paddle.color;
+        c.fillRect(this.paddle.x,this.paddle.y,this.paddle.width,this.paddle.height);
+        c.restore();
     };
-};
-
-function clearCanvas() {
-    c.fillStyle = 'black';
-    c.fillRect(0,0,canvas.width,canvas.height);
-};
+    this.DrawScore = function () {
+        c.save();
+        c.fillStyle = 'rgba(0,255,0,0.75)';
+        c.fillText('score: ' + this.GameProperties.Score,2,10);
+        c.restore();
+    };	
+    this.DrawLives = function () {
+        c.fillStyle = 'rgba(0,255,0,0.75)';
+        c.fillText('lives: ' + this.GameProperties.Lives,canvas.width - 
+                   40, 10);
+    };
+    this.DisplayPaddleCoords = function () {
+      out5.innerHTML = 'paddle: [' + Math.round(this.GameProperties.Paddle.x) + ', ' + 
+          Math.round(this.GameProperties.Paddle.y) + '], [' + Math.round(this.GameProperties.Paddle.x2) + 
+          ', ' + Math.round(this.GameProperties.Paddle.y2) + ']';
+    };
+    this.DrawElapsedTime = function () {
+		// $RP: Rather than write directly to the display, let an interested party just
+		//		read the "elapsed" property and display it as they like.
+        out4.innerHTML = 'Elapsed: ' + this.GameProperties.ElapsedTime;
+    };
+    this.DrawBallCoords = function () {
+      out2.innerHTML = 'ball: [' + Math.round(this.GameProperties.Ball.x) + ', ' + 
+          Math.round(this.GameProperties.Ball.y) + '], [' + Math.round(this.GameProperties.Ball.x2) + 
+          ', ' + Math.round(this.GameProperties.Ball.y2) + ']';
+    };
+	
+	var c = canvas.getContext('2d');
+}
