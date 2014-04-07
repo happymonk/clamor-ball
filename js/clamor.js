@@ -6,6 +6,51 @@
 //global variables
 // $RP: Rather than have this global, we should pass it into our main game module
 // 		so the gaming mechanisms don't know directly what they're drawing to.
+// $ES: I will try that.  Question: Does the main game module decide what to draw
+//    or to the objects themselves ask the game module to draw them?
+
+//Main Game Module
+
+/** $ES: Question: should the main game module be a constructor rather than an object literal?
+ *    this presumes var game defined below is an object literal...
+ *    because, for example:
+ *    function Game() {};
+ *    Game.prototype.someUsefulObject = {me: 'I am useful'};
+ */
+var game = {
+isRunning: true,
+isPaused: false,
+pause: function (e) {
+    var k = e.keyCode;
+    if (k == 80) {
+        game.isPaused = !game.isPaused;
+    };
+    //$ES: is it possible to have a generic notify function that readable data to
+    //    the diagnostics?  Or am I describing an event?
+    out6.innerHTML = 'KeyCode: ' + k + ' paused: ' + game.isPaused;
+},
+loseLife: function () {
+    lives.remaining--;
+},
+draw:  function (object) {
+    var canvas = document.getElementById('game');
+    var c = canvas.getContext('2d');
+    // this looks clumsy, perhaps make it into verifyProperties function below?
+    if (object.hasOwnProperty('x') &&
+        object.hasOwnProperty('y') &&
+        object.hasOwnProperty('color')
+        ) {
+    //do nothing
+    };
+}
+    
+};
+
+// Takes an object and nArgs to verify if object has the needed properties
+function verifyProperties(obj, nArgs) {
+    //todo
+};
+
 var canvas = document.getElementById('game');
 var c = canvas.getContext('2d');
 var output = document.getElementById('output');
@@ -14,16 +59,7 @@ var requestID = 0;
 var intervalID = 0;
 
 var gameState = {
-    isRunning: true,
-    isPaused: false,
-    pauseGame: function (e) {
-        var k = e.keyCode; 
-        if (k == 80) {
-            gameState.isPaused = !gameState.isPaused;
-        };
-        out6.innerHTML = 'KeyCode: ' + k + ' paused: ' + gameState.isPaused;
-
-    }
+    //moved to game object
 };
 
 var frame = {
@@ -134,7 +170,8 @@ var ball = {
         if (this.y >= canvas.height - this.width){
 			//$RP: Raise an event that the point was lost. Let the game driver decide what happens)
             ball.reset();
-            lives.remaining--;
+            paddle.reset();
+            game.loseLife();
         };
     },
     checkPaddle: function () {  //check if ball collides with paddle
@@ -235,6 +272,9 @@ var paddle = {
           Math.round(this.y) + '], [' + Math.round(this.x2) + 
           ', ' + Math.round(this.y2) + ']';
     },
+reset:  function () {
+    this.color = 'white';
+},
     update: function () {
         this.draw();
         this.displayCoords();
@@ -270,7 +310,7 @@ initCanvas();
 requestID = requestAnimationFrame(render);
 
 function gameOver() {
-    gameState.isRunning = false;
+    game.isRunning = false;
     clearCanvas();
     c.fillStyle = 'red';
     c.fillText('GAME OVER',canvas.width/2 - 
@@ -283,7 +323,7 @@ function addELs() {
     canvas.addEventListener(coords.listener, coords.f, false);
     canvas.addEventListener('mousemove', paddle.move,false);
     canvas.addEventListener('click',gameReset,false);
-    document.addEventListener('keydown', gameState.pauseGame, false);
+    document.addEventListener('keydown', game.pause, false);
 };
 
 function initCanvas() {
@@ -294,17 +334,18 @@ function initCanvas() {
 };
 
 function gameReset() {
-    if (!gameState.isRunning){
+    if (!game.isRunning){
         t.getElapsed();
         addELs();
         frame.reset();
         score.reset();
         lives.reset();
         ball.reset();
+        paddle.reset();
         t.getElapsed();
         render();
-        gameState.isRunning = true;
-        gameState.isPaused = false;
+        game.isRunning = true;
+        game.isPaused = false;
     };
 };
 
