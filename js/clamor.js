@@ -3,17 +3,53 @@
  * JavaScript
  */
 
-var gameState = {
-    isRunning: true,
-    isPaused: false,
-    pauseGame: function (e) {
-        var k = e.keyCode; 
-        if (k == 80) {
-            gameState.isPaused = !gameState.isPaused;
-        };
-        out6.innerHTML = 'KeyCode: ' + k + ' paused: ' + gameState.isPaused;
+// $ES: I will try that.  Question: Does the main game module decide what to draw
+//    or to the objects themselves ask the game module to draw them?
 
-    }
+//Main Game Module
+
+/** $ES: Question: should the main game module be a constructor rather than an object literal?
+ *    this presumes var game defined below is an object literal...
+ *    because, for example:
+ *    function Game() {};
+ *    Game.prototype.someUsefulObject = {me: 'I am useful'};
+ */
+var game = {
+isRunning: true,
+isPaused: false,
+pause: function (e) {
+    var k = e.keyCode;
+    if (k == 80) {
+        game.isPaused = !game.isPaused;
+    };
+    //$ES: is it possible to have a generic notify function that readable data to
+    //    the diagnostics?  Or am I describing an event?
+    out6.innerHTML = 'KeyCode: ' + k + ' paused: ' + game.isPaused;
+},
+loseLife: function () {
+    lives.remaining--;
+},
+draw:  function (object) {
+    var canvas = document.getElementById('game');
+    var c = canvas.getContext('2d');
+    // this looks clumsy, perhaps make it into verifyProperties function below?
+    if (object.hasOwnProperty('x') &&
+        object.hasOwnProperty('y') &&
+        object.hasOwnProperty('color')
+        ) {
+    //do nothing
+    };
+}
+    
+};
+
+// Takes an object and nArgs to verify if object has the needed properties
+function verifyProperties(obj, nArgs) {
+    //todo
+};
+
+var gameState = {
+    //moved to game object
 };
   
 var Ball = function(size) {
@@ -93,6 +129,7 @@ var GameDriver = function (lives, canvas) {
     this.CheckCollisions = function () {
         this.CheckPaddle();
         this.CheckWalls();
+            game.loseLife();
     };
     this.CheckWalls = function () {
         if (gameProps.Ball.x <= 0){
@@ -178,6 +215,9 @@ var GameDriver = function (lives, canvas) {
     canvas.addEventListener('mousemove', this.MovePaddle,false);
     canvas.addEventListener('click',this.ResetGame,false);
     document.addEventListener('keydown', gameState.pauseGame, false);
+reset:  function () {
+    this.color = 'white';
+},
 }
 
 var GameProperties = function() {
@@ -233,6 +273,7 @@ var GameDisplay = function (theCanvas, gameProps) {
         c.fillStyle = 'rgba(0,255,0,0.75)';
         c.fillText('score: ' + this.GameProperties.Score,2,10);
         c.restore();
+        paddle.reset();
     };	
     this.DrawLives = function () {
         c.fillStyle = 'rgba(0,255,0,0.75)';
