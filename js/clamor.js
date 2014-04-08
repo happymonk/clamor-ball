@@ -100,16 +100,17 @@ var GameDriver = function (lives, canvas) {
 		requestID = requestAnimationFrame(this.Action);	
 	};
 	this.Action = function() {
-		if (GameProperties.Lives >= 0)
+		var gd = window.GameDriver;
+		if (gameProps.NumLives >= 0)
 		{
-			display.ClearBoard();
-			this.UpdateElapsedTime();
+			display.ClearCanvas();
+			gd.UpdateElapsedTime();
 			gameProps.Ball.Move(gameProps.ElapsedTime);
 			gameProps.Paddle.Move(coords.x);
-			this.CheckCollisions();
+			gd.CheckCollisions();
 			display.RenderAction();
-			this.CheckSpeedUp();
-			requestID = requestAnimationFrame(this.Action);
+			gd.CheckSpeedUp();
+			requestID = requestAnimationFrame(gd.Action);
 		}
 		else
 		{
@@ -129,12 +130,11 @@ var GameDriver = function (lives, canvas) {
     this.CheckCollisions = function () {
         this.CheckPaddle();
         this.CheckWalls();
-            game.loseLife();
     };
     this.CheckWalls = function () {
         if (gameProps.Ball.x <= 0){
             gameProps.Ball.x = 0;
-            gameProps.Ball.ChangeDirection();
+            gameProps.Ball.ChangeXDirection();
         };
         if (gameProps.Ball.x >= canvas.width - gameProps.Ball.width){
             gameProps.Ball.x = canvas.width - gameProps.Ball.width;
@@ -148,7 +148,7 @@ var GameDriver = function (lives, canvas) {
         };
         if (gameProps.Ball.y >= canvas.height - gameProps.Ball.width){
             gameProps.Ball = new Ball(gameProps.Ball.width);
-            gameProps.Lives--;
+            gameProps.NumLives--;
         };
     };
     this.CheckPaddle = function () {  //check if ball collides with paddle
@@ -207,7 +207,7 @@ var GameDriver = function (lives, canvas) {
 		y: 0
 	};
 	
-	canvas.GameDriver = this;
+	window.GameDriver = this;
     canvas.addEventListener('mousemove', function(e) {
 		coords.x = e.clientX - bcr.left;
 		coords.y = e.clientY - bcr.top;
@@ -215,9 +215,6 @@ var GameDriver = function (lives, canvas) {
     canvas.addEventListener('mousemove', this.MovePaddle,false);
     canvas.addEventListener('click',this.ResetGame,false);
     document.addEventListener('keydown', gameState.pauseGame, false);
-reset:  function () {
-    this.color = 'white';
-},
 }
 
 var GameProperties = function() {
@@ -243,9 +240,9 @@ var GameDisplay = function (theCanvas, gameProps) {
 	  this.DrawBall();
       c.save();
       c.fillStyle = 'gray';
-      c.fillText('speed' + Math.round(ball.dy),2,20);
+      c.fillText('speed' + Math.round(this.GameProperties.Ball.dy),2,20);
       c.restore();
-      out3.innerHTML = 'frame: ' + this.GameProperties.frame.count;
+      out3.innerHTML = 'frame: ' + this.GameProperties.Frame;
       //t.getElapsed();
       //t.display();
 	  this.GameProperties.Frame++;
@@ -262,10 +259,21 @@ var GameDisplay = function (theCanvas, gameProps) {
 		c.fillStyle = 'black';
 		c.fillRect(0,0,canvas.width,canvas.height);	
 	};
+	this.DrawBall = function() {
+		c.fillStyle = this.GameProperties.Colors[this.GameProperties.ColorIndex];         
+		//c.fillRect(this.x,this.y,this.width,this.height);
+	    c.beginPath();
+		c.arc(this.GameProperties.Ball.x+5,this.GameProperties.Ball.y+5,5,0,Math.PI*2,false);
+		c.fill();	
+	};
     this.DrawPaddle = function () {
         c.save();
-        c.fillStyle = this.paddle.color;
-        c.fillRect(this.paddle.x,this.paddle.y,this.paddle.width,this.paddle.height);
+        c.fillStyle = this.GameProperties.Colors[this.GameProperties.ColorIndex];
+        c.fillRect(
+		this.GameProperties.Paddle.x,
+		this.GameProperties.Paddle.y,
+		this.GameProperties.Paddle.width,
+		this.GameProperties.Paddle.height);
         c.restore();
     };
     this.DrawScore = function () {
@@ -273,11 +281,10 @@ var GameDisplay = function (theCanvas, gameProps) {
         c.fillStyle = 'rgba(0,255,0,0.75)';
         c.fillText('score: ' + this.GameProperties.Score,2,10);
         c.restore();
-        paddle.reset();
     };	
     this.DrawLives = function () {
         c.fillStyle = 'rgba(0,255,0,0.75)';
-        c.fillText('lives: ' + this.GameProperties.Lives,canvas.width - 
+        c.fillText('lives: ' + this.GameProperties.NumLives,canvas.width - 
                    40, 10);
     };
     this.DisplayPaddleCoords = function () {
