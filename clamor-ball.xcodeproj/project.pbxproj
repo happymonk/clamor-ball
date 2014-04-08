@@ -1,0 +1,85 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		20A14C4518F4C3DB0091166F /* clamor.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = clamor.html; path = clamor.html; sourceTree = "<group>"; };
+		20A14C4718F4C3DB0091166F /* clamor.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = clamor.js; sourceTree = "<group>"; };
+		20A14C4818F4C3DB0091166F /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = README; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		20A14C3E18F4C0630091166F = {
+			isa = PBXGroup;
+			children = (
+				20A14C4518F4C3DB0091166F /* clamor.html */,
+				20A14C4618F4C3DB0091166F /* js */,
+				20A14C4818F4C3DB0091166F /* README */,
+			);
+			sourceTree = "<group>";
+		};
+		20A14C4618F4C3DB0091166F /* js */ = {
+			isa = PBXGroup;
+			children = (
+				20A14C4718F4C3DB0091166F /* clamor.js */,
+			);
+			name = js;
+			path = js;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		20A14C3F18F4C0630091166F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
+			buildConfigurationList = 20A14C4218F4C0630091166F /* Build configuration list for PBXProject "clamor-ball" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 20A14C3E18F4C0630091166F;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		20A14C4318F4C0630091166F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		20A14C4418F4C0630091166F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		20A14C4218F4C0630091166F /* Build configuration list for PBXProject "clamor-ball" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				20A14C4318F4C0630091166F /* Debug */,
+				20A14C4418F4C0630091166F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 20A14C3F18F4C0630091166F /* Project object */;
+}
