@@ -96,36 +96,38 @@ var Paddle = function(size) {
 var GameDriver = function (lives, canvas) {
 	this.Start = function() {
 		//game loop here
-		display.ClearCanvas();
+		this.Display.ClearCanvas();
 		requestID = requestAnimationFrame(this.Action);	
 	};
 	this.Action = function() {
-		var gd = window.GameDriver;
+		var gd = window.driver;
 		if (gameProps.NumLives >= 0)
 		{
-			display.ClearCanvas();
+			gd.Display.ClearCanvas();
 			gd.UpdateElapsedTime();
 			gameProps.Ball.Move(gameProps.ElapsedTime);
 			gameProps.Paddle.Move(coords.x);
 			gd.CheckCollisions();
-			display.RenderAction();
+			gd.Display.RenderAction();
 			gd.CheckSpeedUp();
-			requestID = requestAnimationFrame(gd.Action);
 		}
 		else
 		{
-			display.ShowGameOver();
+			gd.Display.ShowGameOver();
+			gd.Display.DrawPaddle();
 		}
+		requestID = requestAnimationFrame(gd.Action);
 		
 	};
 	this.MovePaddle = function(e) {
-        var x = (e.clientX - bcr.left - (gameProps.Paddle.width/2));
-        if (x < 0) {
-            gameProps.Paddle.Move(0);
-        };
-        if (x > 0 && x < canvas.width - gameProps.Paddle.width) {
-            gameProps.Paddle.Move(x);
-        };
+        	var x = (e.clientX - bcr.left - (gameProps.Paddle.width/2));
+        	if (x < 0) {
+            		gameProps.Paddle.Move(0);
+        	};
+        	if (x > 0 && x < canvas.width - gameProps.Paddle.width) {
+            		gameProps.Paddle.Move(x);
+        	};
+		window.driver.Display.DisplayPaddleCoords();
 	};
     this.CheckCollisions = function () {
         this.CheckPaddle();
@@ -193,13 +195,12 @@ var GameDriver = function (lives, canvas) {
 		return gp;
 	};
 	this.ResetGame = function(e) {
-		gameProps = this.GameDriver.ResetGameProps();
-		display.ClearCanvas();
+		window.driver = new GameDriver(lives, canvas);
 	}
 	;
 	var bcr = canvas.getBoundingClientRect();	
 	var gameProps = this.ResetGameProps();
-	var display = new GameDisplay(canvas, gameProps);
+	this.Display = new GameDisplay(canvas, gameProps);
 	var t0 = Date.now();
 	var t1 = Date.now();
 	var coords = {
@@ -207,7 +208,7 @@ var GameDriver = function (lives, canvas) {
 		y: 0
 	};
 	
-	window.GameDriver = this;
+	window.driver = this;
     canvas.addEventListener('mousemove', function(e) {
 		coords.x = e.clientX - bcr.left;
 		coords.y = e.clientY - bcr.top;
@@ -234,10 +235,10 @@ var GameDisplay = function (theCanvas, gameProps) {
 	this.GameProperties = gameProps,
 	this.RenderAction = function() {
       this.ClearCanvas();
+	  this.DrawBall();
 	  this.DrawPaddle();
 	  this.DrawScore();
 	  this.DrawLives();
-	  this.DrawBall();
       c.save();
       c.fillStyle = 'gray';
       c.fillText('speed' + Math.round(this.GameProperties.Ball.dy),2,20);
