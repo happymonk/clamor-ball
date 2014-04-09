@@ -97,7 +97,7 @@ var GameDriver = function (lives, canvas) {
 	this.Start = function() {
 		//game loop here
 		display.ClearCanvas();
-		requestID = requestAnimationFrame(this.Action);	
+		requestID = requestAnimationFrame(window.GameDriver.Action);
 	};
 	this.Action = function() {
 		var gd = window.GameDriver;
@@ -193,8 +193,9 @@ var GameDriver = function (lives, canvas) {
 		return gp;
 	};
 	this.ResetGame = function(e) {
-		gameProps = this.GameDriver.ResetGameProps();
+		gameProps = window.GameDriver.ResetGameProps();
 		display.ClearCanvas();
+        requestID = requestAnimationFrame(this.GameDriver.Action);
 	}
 	;
 	var bcr = canvas.getBoundingClientRect();	
