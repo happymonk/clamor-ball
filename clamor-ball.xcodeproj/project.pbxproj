@@ -7,15 +7,37 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		20A14C4518F4C3DB0091166F /* clamor.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = clamor.html; path = clamor.html; sourceTree = "<group>"; };
+		209837C518F4C6DB004BC311 /* clamor.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = clamor.html; sourceTree = "<group>"; };
+		209837C718F4C6DB004BC311 /* clamor.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = clamor.js; sourceTree = "<group>"; };
+		209837C818F4C6DB004BC311 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		20A14C4518F4C3DB0091166F /* clamor.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = clamor.html; sourceTree = "<group>"; };
 		20A14C4718F4C3DB0091166F /* clamor.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = clamor.js; sourceTree = "<group>"; };
-		20A14C4818F4C3DB0091166F /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = README; sourceTree = "<group>"; };
+		20A14C4818F4C3DB0091166F /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		209837C418F4C6DB004BC311 /* robRework */ = {
+			isa = PBXGroup;
+			children = (
+				209837C518F4C6DB004BC311 /* clamor.html */,
+				209837C618F4C6DB004BC311 /* js */,
+				209837C818F4C6DB004BC311 /* README */,
+			);
+			path = robRework;
+			sourceTree = "<group>";
+		};
+		209837C618F4C6DB004BC311 /* js */ = {
+			isa = PBXGroup;
+			children = (
+				209837C718F4C6DB004BC311 /* clamor.js */,
+			);
+			path = js;
+			sourceTree = "<group>";
+		};
 		20A14C3E18F4C0630091166F = {
 			isa = PBXGroup;
 			children = (
+				209837C418F4C6DB004BC311 /* robRework */,
 				20A14C4518F4C3DB0091166F /* clamor.html */,
 				20A14C4618F4C3DB0091166F /* js */,
 				20A14C4818F4C3DB0091166F /* README */,
@@ -27,7 +49,6 @@
 			children = (
 				20A14C4718F4C3DB0091166F /* clamor.js */,
 			);
-			name = js;
 			path = js;
 			sourceTree = "<group>";
 		};

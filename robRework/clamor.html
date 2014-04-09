@@ -1,0 +1,37 @@
+<!doctype html>
+
+<html>
+<head>
+	<title>Clamor-Ball</title>
+	<style type="text/css">
+	#game {
+		width: 336px;
+		height: 320px;
+	}
+	</style>
+</head>
+
+<body>
+
+<canvas id='game'>canvas not supported</canvas>
+
+<div id='output'>mouse: waiting...</div>
+<div id='diagnostics'>
+	<div id='out2'>ball:</div>
+	<div id='out5'>paddle: </div>
+	<div id='out3'>Frame:</div>
+	<div id='out4'>Elapsed:</div>
+	<div id='out6'>KeyCode:</div>
+</div>
+
+<script src='js/clamor.js' type="text/javascript"></script>
+<script type="text/javascript">
+var canvas = document.getElementById('game');
+var gameDriver = new GameDriver(2, canvas);
+
+gameDriver.Start();
+
+</script>
+</body>
+
+</html>
