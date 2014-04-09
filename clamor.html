@@ -3,17 +3,22 @@
 <html>
 <head>
 	<title>Clamor-Ball</title>
-	<style type="text/css">
+<!--// 
+  $es: css is stretching the canvas, console returns the default values 300 and 150
+  I've read about similar issues
+ 
+    <style type="text/css">
 	#game {
 		width: 336px;
 		height: 320px;
 	}
 	</style>
+/-->
 </head>
 
 <body>
 
-<canvas id='game'>canvas not supported</canvas>
+<canvas id='game' width=336 height=300>canvas not supported</canvas>
 
 <div id='output'>mouse: waiting...</div>
 <div id='diagnostics'>
