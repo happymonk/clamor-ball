@@ -47,11 +47,7 @@ draw:  function (object) {
 function verifyProperties(obj, nArgs) {
     //todo
 };
-
-var gameState = {
-    //moved to game object
-};
-  
+ 
 var Ball = function(size) {
     this.x = 16;
     this.x2 = this.x + size;
@@ -94,6 +90,10 @@ var Paddle = function(size) {
 };
 
 var GameDriver = function (lives, canvas) {
+    this.GameState = {
+	    isRunning: true,
+		isPaused: false
+	};
 	this.Start = function() {
 		//game loop here
 		this.Display.ClearCanvas();
@@ -106,7 +106,7 @@ var GameDriver = function (lives, canvas) {
 			gd.Display.ClearCanvas();
 			gd.UpdateElapsedTime();
 			gameProps.Ball.Move(gameProps.ElapsedTime);
-			gameProps.Paddle.Move(coords.x - 25);
+			gameProps.Paddle.Move(coords.x - gameProps.Paddle.width/2);
 			gd.CheckCollisions();
 			gd.Display.RenderAction();
 			gd.CheckSpeedUp();
@@ -152,6 +152,7 @@ var GameDriver = function (lives, canvas) {
             gameProps.Ball = new Ball(gameProps.Ball.width);
             gameProps.NumLives--;
             gameProps.ColorIndex = 0;
+			gameProps.Paddle.width = 100;
         };
     };
     this.CheckPaddle = function () {  //check if ball collides with paddle
@@ -172,6 +173,11 @@ var GameDriver = function (lives, canvas) {
 		if (gameProps.ColorIndex > gameProps.Colors.length)
 			gameProps.ColorIndex = 0;
     };
+	this.ShrinkPaddle = function () {
+	    if (gameProps.Paddle.width > 20) {
+		    gameProps.Paddle.width -= 20;
+		};
+	};
     this.speedLimit = 700,
     this.CheckSpeedUp = function () {
         //speed up the ball
@@ -180,13 +186,14 @@ var GameDriver = function (lives, canvas) {
 				gameProps.Ball.SpeedUp(.25);
                 gameProps.NextSpeedUp += 5;
                 this.ChangeColor();
+				this.ShrinkPaddle();
             };
         };
     };
 	this.ResetGameProps = function() {
 		var gp = new GameProperties();
 		gp.Ball = new Ball(10);
-		gp.Paddle = new Paddle(50);
+		gp.Paddle = new Paddle(80);
 		gp.Score = 0;
 		gp.NumLives = lives;
 		gp.NextSpeedUp = 5;
@@ -216,7 +223,7 @@ var GameDriver = function (lives, canvas) {
 	}, false);
     canvas.addEventListener('mousemove', this.MovePaddle,false);
     canvas.addEventListener('click',this.ResetGame,false);
-    document.addEventListener('keydown', gameState.pauseGame, false);
+    //document.addEventListener('keydown', gameState.pauseGame, false);
 }
 
 var GameProperties = function() {
