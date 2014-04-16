@@ -1,6 +1,7 @@
 /**
  * Clamor-Ball
  * JavaScript
+ * This version of clamor.js uses global objects and object literals.
  */
 
 //global variables
