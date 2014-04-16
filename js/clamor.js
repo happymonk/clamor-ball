@@ -151,6 +151,7 @@ var GameDriver = function (lives, canvas) {
         if (gameProps.Ball.y >= canvas.height - gameProps.Ball.width){
             gameProps.Ball = new Ball(gameProps.Ball.width);
             gameProps.NumLives--;
+			gameProps.ColorIndex = 0;
         };
     };
     this.CheckPaddle = function () {  //check if ball collides with paddle
