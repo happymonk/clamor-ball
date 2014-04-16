@@ -152,7 +152,7 @@ var GameDriver = function (lives, canvas) {
             gameProps.Ball = new Ball(gameProps.Ball.width);
             gameProps.NumLives--;
             gameProps.ColorIndex = 0;
-			gameProps.Paddle.width = 100;
+			gameProps.Paddle.width = 80;
         };
     };
     this.CheckPaddle = function () {  //check if ball collides with paddle
