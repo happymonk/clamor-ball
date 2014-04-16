@@ -106,7 +106,7 @@ var GameDriver = function (lives, canvas) {
 			gd.Display.ClearCanvas();
 			gd.UpdateElapsedTime();
 			gameProps.Ball.Move(gameProps.ElapsedTime);
-			gameProps.Paddle.Move(coords.x);
+			gameProps.Paddle.Move(coords.x - 25);
 			gd.CheckCollisions();
 			gd.Display.RenderAction();
 			gd.CheckSpeedUp();
@@ -151,7 +151,7 @@ var GameDriver = function (lives, canvas) {
         if (gameProps.Ball.y >= canvas.height - gameProps.Ball.width){
             gameProps.Ball = new Ball(gameProps.Ball.width);
             gameProps.NumLives--;
-			gameProps.ColorIndex = 0;
+            gameProps.ColorIndex = 0;
         };
     };
     this.CheckPaddle = function () {  //check if ball collides with paddle
